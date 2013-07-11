@@ -3,7 +3,6 @@ Bundle-ManifestVersion: 2
 Bundle-Name: SLA Cleanup helpers
 Bundle-SymbolicName: ch.slaurent.cleanup;singleton:=true
 Bundle-Version: 1.0.0.qualifier
-Bundle-Activator: ch.slaurent.cleanup.Activator
 Require-Bundle: org.eclipse.ui,
  org.eclipse.core.runtime,
  org.eclipse.jdt.core,

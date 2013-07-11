@@ -14,12 +14,12 @@
       <cleanUpConfigurationUI
             class="ch.slaurent.cleanup.SourceCleanUpConfigurationUI"
             cleanUpKind="saveAction"
-            name="slaurent cleanups">
+            name="Misc cleanups">
       </cleanUpConfigurationUI>
       <cleanUpConfigurationUI
             class="ch.slaurent.cleanup.SourceCleanUpConfigurationUI"
             cleanUpKind="cleanUp"
-            name="slaurent cleanups">
+            name="Misc cleanups">
       </cleanUpConfigurationUI>
       <cleanUp
             class="ch.slaurent.cleanup.SourceCleanUp"

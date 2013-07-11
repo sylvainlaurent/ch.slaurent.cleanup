@@ -2,15 +2,14 @@ package ch.slaurent.cleanup;
 
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.jdt.core.Flags;
 import org.eclipse.jdt.core.ICompilationUnit;
 import org.eclipse.jdt.core.dom.ASTVisitor;
-import org.eclipse.jdt.core.dom.AnnotationTypeDeclaration;
 import org.eclipse.jdt.core.dom.CompilationUnit;
 import org.eclipse.jdt.core.dom.MethodDeclaration;
 import org.eclipse.jdt.core.dom.MethodInvocation;
 import org.eclipse.jdt.core.dom.Modifier;
 import org.eclipse.jdt.core.dom.TypeDeclaration;
+import org.eclipse.jdt.core.dom.rewrite.ASTRewrite;
 import org.eclipse.jdt.core.refactoring.CompilationUnitChange;
 import org.eclipse.jdt.ui.cleanup.CleanUpContext;
 import org.eclipse.jdt.ui.cleanup.CleanUpOptions;
@@ -20,6 +19,7 @@ import org.eclipse.text.edits.TextEdit;
 
 public class RemoveRedundantModifiersCleanUpFix implements ICleanUpFix {
 	private CleanUpContext context;
+	@SuppressWarnings("unused")
 	private final CleanUpOptions options;
 
 	public RemoveRedundantModifiersCleanUpFix(CleanUpContext context,
@@ -35,10 +35,13 @@ public class RemoveRedundantModifiersCleanUpFix implements ICleanUpFix {
 		ICompilationUnit icu = context.getCompilationUnit();
 		String source = context.getCompilationUnit().getSource();
 		Document doc = new Document(source);
-		cu.recordModifications();
-		cu.accept(new RedundantModifierRemover());
 
-		TextEdit edits = cu.rewrite(doc, icu.getJavaProject().getOptions(true));
+		ASTRewrite rewrite = ASTRewrite.create(cu.getAST());
+
+		cu.accept(new RedundantModifierRemover(rewrite));
+
+		TextEdit edits = rewrite.rewriteAST(doc, icu.getJavaProject()
+				.getOptions(true));
 		CompilationUnitChange change = new CompilationUnitChange(
 				"Remove redundant modifiers", icu);
 		change.setEdit(edits);
@@ -46,27 +49,13 @@ public class RemoveRedundantModifiersCleanUpFix implements ICleanUpFix {
 		return change;
 	}
 
-	// private void work() throws CoreException {
-	// IType[] allTypes = compilationUnit.getAllTypes();
-	// for (IType type : allTypes) {
-	// if (type.isInterface() && Flags.isPublic(type.getFlags())) {
-	// for (IMethod method : type.getMethods()) {
-	// if (Flags.isPublic(method.getFlags())) {
-	// // TODO remove public
-	// System.out.println("found public method " + method);
-	// }
-	// if (Flags.isAbstract(method.getFlags())) {
-	// // TODO remove public
-	// System.out.println("found abstract method " + method);
-	// }
-	// }
-	// }
-	// }
-	// }
-
 	private static class RedundantModifierRemover extends ASTVisitor {
+		private ASTRewrite astRewrite;
 		private boolean visitingMethod = false;
 
+		RedundantModifierRemover(ASTRewrite astRewrite) {
+			this.astRewrite = astRewrite;
+		}
 
 		@Override
 		public boolean visit(MethodDeclaration node) {
@@ -78,7 +67,7 @@ public class RemoveRedundantModifiersCleanUpFix implements ICleanUpFix {
 		public boolean visit(Modifier node) {
 			if (visitingMethod) {
 				if (node.isAbstract() || node.isPublic()) {
-					node.delete();
+					astRewrite.remove(node, null);
 				}
 			}
 			return true;
@@ -86,18 +75,12 @@ public class RemoveRedundantModifiersCleanUpFix implements ICleanUpFix {
 
 		@Override
 		public boolean visit(TypeDeclaration node) {
-			return node.isInterface() && Modifier.isPublic(node.getModifiers());
+			return node.isInterface();
 		}
 
 		@Override
 		public void endVisit(MethodInvocation node) {
 			visitingMethod = false;
-		}
-
-		@Override
-		public void endVisit(Modifier node) {
-			// TODO Auto-generated method stub
-			super.endVisit(node);
 		}
 
 	}
