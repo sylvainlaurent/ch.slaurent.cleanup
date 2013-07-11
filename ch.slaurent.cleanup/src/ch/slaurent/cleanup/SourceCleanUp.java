@@ -19,6 +19,10 @@ import org.eclipse.ltk.core.refactoring.RefactoringStatus;
 public class SourceCleanUp implements ICleanUp {
 	private CleanUpOptions options;
 
+	public SourceCleanUp() {
+
+	}
+
 	@Override
 	public void setOptions(CleanUpOptions options) {
 		this.options = options;
@@ -50,7 +54,7 @@ public class SourceCleanUp implements ICleanUp {
 	public ICleanUpFix createFix(CleanUpContext context) throws CoreException {
 		if (options.isEnabled(REMOVE_REDUNDANT_MODIFIERS)) {
 			return new RemoveRedundantModifiersCleanUpFix(
-					context.getCompilationUnit(), options);
+					context, options);
 		}
 		return null;
 	}

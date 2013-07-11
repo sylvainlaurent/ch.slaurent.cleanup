@@ -21,6 +21,10 @@
             cleanUpKind="cleanUp"
             name="slaurent cleanups">
       </cleanUpConfigurationUI>
+      <cleanUp
+            class="ch.slaurent.cleanup.SourceCleanUp"
+            id="ch.slaurent.cleanup.removeRedundantModifiers">
+      </cleanUp>
    </extension>
 
 </plugin>
