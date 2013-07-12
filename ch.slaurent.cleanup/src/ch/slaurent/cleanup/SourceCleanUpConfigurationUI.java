@@ -1,6 +1,7 @@
 package ch.slaurent.cleanup;
 
 import static ch.slaurent.cleanup.SourceCleanUpOptionsInitializer.REMOVE_REDUNDANT_MODIFIERS;
+import static ch.slaurent.cleanup.SourceCleanUpOptionsInitializer.REMOVE_REDUNDANT_THROWS;
 
 import org.eclipse.jdt.ui.cleanup.CleanUpOptions;
 import org.eclipse.jdt.ui.cleanup.ICleanUpConfigurationUI;
@@ -20,27 +21,33 @@ public class SourceCleanUpConfigurationUI implements ICleanUpConfigurationUI {
 		GridLayout layout = new GridLayout();
 		composite.setLayout(layout);
 		layout.numColumns = 1;
+		createCheckbox(composite, "Remove redundant modifiers",
+				REMOVE_REDUNDANT_MODIFIERS);
+		createCheckbox(composite, "Remove redundant throws",
+				REMOVE_REDUNDANT_THROWS);
+		return composite;
+	}
+
+	private void createCheckbox(final Composite composite, final String label,
+			final String optionName) {
 		final Button convertButton = new Button(composite, SWT.CHECK);
 		convertButton.setLayoutData(new GridData(SWT.FILL, SWT.NONE, true,
 				false, 1, 1));
-		convertButton.setText("Remove redundant modifiers");
-		convertButton.setSelection(options
-				.isEnabled(REMOVE_REDUNDANT_MODIFIERS));
+		convertButton.setText(label);
+		convertButton.setSelection(options.isEnabled(optionName));
 		convertButton.addSelectionListener(new SelectionListener() {
 			public void widgetSelected(SelectionEvent e) {
-				options.setOption(REMOVE_REDUNDANT_MODIFIERS, convertButton
-						.getSelection() ? CleanUpOptions.TRUE
-						: CleanUpOptions.FALSE);
+				options.setOption(optionName,
+						convertButton.getSelection() ? CleanUpOptions.TRUE
+								: CleanUpOptions.FALSE);
 			}
 
 			public void widgetDefaultSelected(SelectionEvent e) {
-				options.setOption(REMOVE_REDUNDANT_MODIFIERS, convertButton
-						.getSelection() ? CleanUpOptions.TRUE
-						: CleanUpOptions.FALSE);
+				options.setOption(optionName,
+						convertButton.getSelection() ? CleanUpOptions.TRUE
+								: CleanUpOptions.FALSE);
 			}
 		});
-
-		return composite;
 	}
 
 	@Override
@@ -50,12 +57,15 @@ public class SourceCleanUpConfigurationUI implements ICleanUpConfigurationUI {
 
 	@Override
 	public int getCleanUpCount() {
-		return 1;
+		return 2;
 	}
 
 	@Override
 	public int getSelectedCleanUpCount() {
-		return options.isEnabled(REMOVE_REDUNDANT_MODIFIERS) ? 1 : 0;
+		int count = 0;
+		count += options.isEnabled(REMOVE_REDUNDANT_MODIFIERS) ? 1 : 0;
+		count += options.isEnabled(REMOVE_REDUNDANT_THROWS) ? 1 : 0;
+		return count;
 	}
 
 	@Override

@@ -1,6 +1,6 @@
 package ch.slaurent.cleanup;
 
-import static ch.slaurent.cleanup.SourceCleanUpOptionsInitializer.REMOVE_REDUNDANT_MODIFIERS;
+import static ch.slaurent.cleanup.SourceCleanUpOptionsInitializer.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -39,6 +39,9 @@ public class SourceCleanUp implements ICleanUp {
 		if (options.isEnabled(REMOVE_REDUNDANT_MODIFIERS)) {
 			steps.add("Remove redundant modifiers");
 		}
+		if (options.isEnabled(REMOVE_REDUNDANT_THROWS)) {
+			steps.add("Remove redundant throws");
+		}
 
 		return steps.toArray(new String[steps.size()]);
 	}
@@ -52,11 +55,7 @@ public class SourceCleanUp implements ICleanUp {
 
 	@Override
 	public ICleanUpFix createFix(CleanUpContext context) throws CoreException {
-		if (options.isEnabled(REMOVE_REDUNDANT_MODIFIERS)) {
-			return new RemoveRedundantModifiersCleanUpFix(
-					context, options);
-		}
-		return null;
+		return new MultiCleanUpFix(context, options);
 	}
 
 	@Override

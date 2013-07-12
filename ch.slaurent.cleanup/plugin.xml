@@ -23,7 +23,7 @@
       </cleanUpConfigurationUI>
       <cleanUp
             class="ch.slaurent.cleanup.SourceCleanUp"
-            id="ch.slaurent.cleanup.removeRedundantModifiers">
+            id="ch.slaurent.cleanup.SourceCleanUp">
       </cleanUp>
    </extension>
 

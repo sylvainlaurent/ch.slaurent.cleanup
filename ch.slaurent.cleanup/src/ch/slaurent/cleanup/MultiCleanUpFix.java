@@ -1,13 +1,20 @@
 package ch.slaurent.cleanup;
 
+import static ch.slaurent.cleanup.SourceCleanUpOptionsInitializer.REMOVE_REDUNDANT_MODIFIERS;
+import static ch.slaurent.cleanup.SourceCleanUpOptionsInitializer.REMOVE_REDUNDANT_THROWS;
+
+import java.util.List;
+
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jdt.core.ICompilationUnit;
 import org.eclipse.jdt.core.dom.ASTVisitor;
 import org.eclipse.jdt.core.dom.CompilationUnit;
+import org.eclipse.jdt.core.dom.ITypeBinding;
 import org.eclipse.jdt.core.dom.MethodDeclaration;
 import org.eclipse.jdt.core.dom.MethodInvocation;
 import org.eclipse.jdt.core.dom.Modifier;
+import org.eclipse.jdt.core.dom.Name;
 import org.eclipse.jdt.core.dom.TypeDeclaration;
 import org.eclipse.jdt.core.dom.rewrite.ASTRewrite;
 import org.eclipse.jdt.core.refactoring.CompilationUnitChange;
@@ -17,13 +24,11 @@ import org.eclipse.jdt.ui.cleanup.ICleanUpFix;
 import org.eclipse.jface.text.Document;
 import org.eclipse.text.edits.TextEdit;
 
-public class RemoveRedundantModifiersCleanUpFix implements ICleanUpFix {
+public class MultiCleanUpFix implements ICleanUpFix {
 	private CleanUpContext context;
-	@SuppressWarnings("unused")
 	private final CleanUpOptions options;
 
-	public RemoveRedundantModifiersCleanUpFix(CleanUpContext context,
-			CleanUpOptions options) {
+	public MultiCleanUpFix(CleanUpContext context, CleanUpOptions options) {
 		this.context = context;
 		this.options = options;
 	}
@@ -49,23 +54,42 @@ public class RemoveRedundantModifiersCleanUpFix implements ICleanUpFix {
 		return change;
 	}
 
-	private static class RedundantModifierRemover extends ASTVisitor {
+	private class RedundantModifierRemover extends ASTVisitor {
 		private ASTRewrite astRewrite;
+		private ITypeBinding runtimeExceptionBinding;
+		private ITypeBinding errorBinding;
 		private boolean visitingMethod = false;
 
 		RedundantModifierRemover(ASTRewrite astRewrite) {
 			this.astRewrite = astRewrite;
+			runtimeExceptionBinding = astRewrite.getAST().resolveWellKnownType(
+					"java.lang.RuntimeException");
+			errorBinding = astRewrite.getAST().resolveWellKnownType(
+					"java.lang.Error");
 		}
 
 		@Override
 		public boolean visit(MethodDeclaration node) {
 			visitingMethod = true;
+			if (options.isEnabled(REMOVE_REDUNDANT_THROWS)) {
+				@SuppressWarnings("unchecked")
+				List<Name> thrownExceptions = node.thrownExceptions();
+				for (Name name : thrownExceptions) {
+					ITypeBinding typeBinding = name.resolveTypeBinding();
+					if (typeBinding
+							.isSubTypeCompatible(runtimeExceptionBinding)
+							|| typeBinding.isSubTypeCompatible(errorBinding)) {
+						astRewrite.remove(name, null);
+					}
+
+				}
+			}
 			return true;
 		}
 
 		@Override
 		public boolean visit(Modifier node) {
-			if (visitingMethod) {
+			if (visitingMethod && options.isEnabled(REMOVE_REDUNDANT_MODIFIERS)) {
 				if (node.isAbstract() || node.isPublic()) {
 					astRewrite.remove(node, null);
 				}
