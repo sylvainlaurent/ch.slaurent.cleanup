@@ -1,6 +1,6 @@
 Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
-Bundle-Name: SLA Cleanup helpers
+Bundle-Name: Additional Cleanup helpers
 Bundle-SymbolicName: ch.slaurent.cleanup;singleton:=true
 Bundle-Version: 1.0.0.qualifier
 Require-Bundle: org.eclipse.ui,
@@ -12,3 +12,4 @@ Require-Bundle: org.eclipse.ui,
  org.eclipse.ltk.core.refactoring;bundle-version="3.6.100"
 Bundle-RequiredExecutionEnvironment: JavaSE-1.6
 Bundle-ActivationPolicy: lazy
+Bundle-Vendor: Sylvain Laurent https://github.com/sylvainlaurent/ch.slaurent.cleanup
